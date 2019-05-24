@@ -12,7 +12,7 @@ int main(){
 	static struct node root;
 
 	for(;;){
-		char buf[100];
+		char buf[10000];
 		fgets(buf, sizeof buf, stdin);
 
 		if(buf[0] == '\n') break;
@@ -27,7 +27,8 @@ int main(){
 		p->len = len;
 	}
 
-	static struct node *queue[10000] = {&root};
+	static struct node *queue[10000];
+	queue[0] = &root;
 	for(int s = 0, e = 1; s != e; ++s == sizeof queue / sizeof queue[0] && (s = 0)){
 		for(int i = 1; i < 256; ++i) if(queue[s]->child[i]){
 			for(struct node *tmp = queue[s]->child[0];; tmp = tmp->child[0]){
@@ -46,7 +47,7 @@ int main(){
 		}
 	}
 
-	static char in[1000000], out[1000000];
+	static char in[100000000], out[100000000];
 	fgets(in, sizeof in, stdin);
 
 	struct node *p = &root;
@@ -64,14 +65,15 @@ int main(){
 		if(p->len){
 			if(!p->label) p->label = ++cnt;
 			char buf[100] = {};
-			sprintf(buf, "[%d]", p->label);
+			sprintf(buf, "( %d )", p->label);
 			strcpy(out + j - p->len + 1, buf);
 			j += strlen(buf) - p->len;
 			p = &root;
 		}else out[j] = in[i];
 	}
 
-	static struct node *stack[10000] = {&root};
+	static struct node *stack[10000];
+       	stack[0] = &root;
 	for(int n = 1; n;){
 		struct node *tmp = stack[--n];
 		for(int i = 1; i < 256; ++i) if(tmp->child[i]) stack[n++] = tmp->child[i];
