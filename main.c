@@ -21,15 +21,15 @@ int main(){
 
 		struct node *p = &root;
 		for(int j = 0; j < len; ++j){
-			if(!p->child[buf[j]]) p->child[buf[j]] = malloc(sizeof(struct node));
-			p = p->child[buf[j]];
+			if(!p->child[(unsigned char)buf[j]]) p->child[(unsigned char)buf[j]] = malloc(sizeof(struct node));
+			p = p->child[(unsigned char)buf[j]];
 		}
 		p->len = len;
 	}
 
 	static struct node *queue[10000];
 	queue[0] = &root;
-	for(int s = 0, e = 1; s != e; ++s == sizeof queue / sizeof queue[0] && (s = 0)){
+	for(int s = 0, e = 1; s != e;){
 		for(int i = 1; i < 256; ++i) if(queue[s]->child[i]){
 			for(struct node *tmp = queue[s]->child[0];; tmp = tmp->child[0]){
 				if(!tmp){
@@ -42,35 +42,42 @@ int main(){
 				}
 			}
 			queue[e] = queue[s]->child[i];
-			if(e + 1 == sizeof queue / sizeof queue[0]) e = 0;
-			else ++e;
+			++e;
+			if(e == sizeof queue / sizeof queue[0]) e = 0;
 		}
+		++s;
+		if(s == sizeof queue / sizeof queue[0]) s = 0;
 	}
 
-	static char in[100000000], out[100000000];
-	fgets(in, sizeof in, stdin);
-
+	static char out[100000000];
 	struct node *p = &root;
-	for(int i = 0, j = 0, cnt = 0; in[i] != '\n' || (out[j] = '\0'); ++i, ++j){
+	for(int i = 0, cnt = 0;; ++i){
+		char ch = getchar();
+		if(ch == EOF) break;
 		for(;;p = p->child[0]){
 			if(!p){
 				p = &root;
 				break;
 			}
-			if(p->child[in[i]]){
-				p = p->child[in[i]];
+			if(p->child[(unsigned char)ch]){
+				p = p->child[(unsigned char)ch];
 				break;
 			}
 		}
 		if(p->len){
-			if(!p->label) p->label = ++cnt;
 			char buf[100] = {};
-			sprintf(buf, "( %d )", p->label);
-			strcpy(out + j - p->len + 1, buf);
-			j += strlen(buf) - p->len;
+			if(!p->label){
+				p->label = ++cnt;
+				sprintf(buf, "( %d )", p->label);
+			}else{
+				sprintf(buf, "(%d)", p->label);
+			}
+			strcpy(out + i - p->len + 1, buf);
+			i += strlen(buf) - p->len;
 			p = &root;
-		}else out[j] = in[i];
+		}else out[i] = ch;
 	}
+	puts(out);
 
 	static struct node *stack[10000];
        	stack[0] = &root;
@@ -79,6 +86,4 @@ int main(){
 		for(int i = 1; i < 256; ++i) if(tmp->child[i]) stack[n++] = tmp->child[i];
 		if(tmp != &root) free(tmp);
 	}
-
-	puts(out);
 }
